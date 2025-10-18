@@ -1,0 +1,40 @@
+import os
+from django.http import HttpResponseRedirect
+from bert_classifier.models import Task
+from django.shortcuts import get_object_or_404, render
+from .apps import ImageClassificationConfig
+from django.urls import reverse
+from image_classification.forms import UserImage
+
+
+def detail(request, task_id):
+    task = get_object_or_404(Task, pk=task_id)
+    latest_predictions = task.image_set.order_by('-id')[:6][::-1]  # Покажем 6 последних
+
+    context = {
+        'task': task,
+        'latest_predictions': latest_predictions
+    }
+
+    form = UserImage(initial={'task': task_id})
+    context["form"] = form
+
+    return render(request, 'image_classification/detail.html', context)
+
+
+def predict(request, task_id):
+    task = get_object_or_404(Task, pk=task_id)
+
+    if request.method == 'POST':
+        form = UserImage(request.POST, request.FILES, initial={'task': task_id})
+        if form.is_valid():
+            form.instance.task = task
+            form.save()
+
+            image_path = form.instance.image.path
+
+            output = ImageClassificationConfig.predictor.predict(image_path)
+            form.instance.image_class = output
+            form.save()
+
+    return HttpResponseRedirect(reverse('image_classification:detail', args=(task.id,)))

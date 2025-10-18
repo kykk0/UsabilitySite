@@ -9,22 +9,16 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+        ('bert_classifier', '0001_initial'),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Task',
+            name='Image',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('task_name', models.CharField(max_length=50)),
-            ],
-        ),
-        migrations.CreateModel(
-            name='InteractionML',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('input_data', models.CharField(max_length=200)),
-                ('output_data', models.CharField(max_length=200)),
+                ('image', models.ImageField(upload_to='images')),
+                ('image_class', models.CharField(max_length=100)),
                 ('task', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='bert_classifier.task')),
             ],
         ),
